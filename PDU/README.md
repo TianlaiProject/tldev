@@ -6,7 +6,7 @@ pdu_http.py is earlier developed by Shifan Zuo;
 
 pdu_snmp.py is then developed by Jixia Li.
 
-Using snmp protocol is more efficient and has much faster respoinse and so is **suggested**.
+Using snmp protocol is more efficient and has much faster response and so is **suggested**.
 
 Using http protocol is **not** suggested becaused of authentication problem and slow response.
 
