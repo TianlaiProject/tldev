@@ -1,15 +1,19 @@
-Hardware setup:
+# A python code for Noise_Figure_Meter_8970B via GPIB.
 
-For Windows OS, install pyvisa, NI-VISA, USB-GPIB driver.
+## Hardware setup
 
-For Mac OS, ??? (Please leave method if you use Mac OS.)
+For *Windows OS*, install *pyvisa, NI-VISA, USB-GPIB* driver.
 
-1. Run:
+For *Mac OS*, ??? (Please leave method if you use Mac OS.)
 
-python Noise_Figure_Meter_8970B.py -h
+## Python
+
+Run
+
+`python Noise_Figure_Meter_8970B.py -h`
 
 for help.
 
-2. Noise_Figure_Meter_8970B.m is a matlab code.
-
+## Matlab
+Noise_Figure_Meter_8970B.m is a matlab code.
 
