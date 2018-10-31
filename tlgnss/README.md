@@ -4,9 +4,7 @@ This code will read and save GNSS raw message to standard RINEX file.
 
 Note:
 
-1. The GNSS receiver is installed in digital room.
-
-2. Due to hardware limitation, by now, only serial connection is supported. If to use tcp connection, some parts of the codes must be modified before running properly.
+Due to hardware limitation, by now, only serial connection is supported. If to use TCP connection, some parts of the codes must be modified before running properly.
 
 
 # Usage
