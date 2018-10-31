@@ -1,0 +1,285 @@
+#!/usr/bin/env python
+
+#######################################
+# Version 1.2                         #
+# Last modified: 2016/9/16            #
+# Any problem, contact jxli@bao.ac.cn #
+#######################################
+
+#import serswitch
+import serswitch_tcp as serswitch
+import time
+import argparse
+import numpy as np
+import sys
+
+#DEVS = {
+#'fpga1' : (1, 1), 'sw1' : (1,13), 'fpga13': (1,25), 'dsp1' : (2, 5), 'sw13': (2,17), 
+#'fpga2' : (1, 2), 'sw2' : (1,14), 'fpga14': (1,26), 'dsp2' : (2, 6), 'sw14': (2,18), 
+#'fpga3' : (1, 3), 'sw3' : (1,15), 'fpga15': (1,27), 'dsp3' : (2, 7), 'sw15': (2,19), 
+#'fpga4' : (1, 4), 'sw4' : (1,16), 'fpga16': (1,28), 'dsp4' : (2, 8), 'sw16': (2,20), 
+#'fpga5' : (1, 5), 'sw5' : (1,17), 'fpga17': (1,29), 'dsp5' : (2, 9), 'sw17': (2,21), 
+#'fpga6' : (1, 6), 'sw6' : (1,18), 'fpga18': (1,30), 'dsp6' : (2,10), 'sw18': (2,22), 
+#'fpga7' : (1, 7), 'sw7' : (1,19), 'fpga19': (1,31), 'dsp7' : (2,11), 'sw19': (2,23), 
+#'fpga8' : (1, 8), 'sw8' : (1,20), 'fpga20': (1,32), 'dsp8' : (2,12), 'sw20': (2,24), 
+#'fpga9' : (1, 9), 'sw9' : (1,21), 'fpga21': (2, 1), 'dsp9' : (2,13), 'sw21': (2,25), 
+#'fpga10': (1,10), 'sw10': (1,22), 'fpga22': (2, 2), 'dsp10': (2,14), 'sw22': (2,26), 
+#'fpga11': (1,11), 'sw11': (1,23), 'fpga23': (2, 3), 'dsp11': (2,15), 'sw23': (2,27), 
+#'fpga12': (1,12), 'sw12': (1,24), 'fpga24': (2, 4), 'dsp12': (2,16), 'sw24': (2,28),
+#}
+
+class corrSwitch(object):
+    '''Correlator power manager: Turn On, Off correlator or Restart one switch.'''
+    def __init__(self):
+        '''Action can be "on", "off", "restart".'''
+        self.MAX_CHASSIS = 2 # Address
+        self.MAX_PORT = 32   # Port
+        self.ini_f = open('switch_ports.ini', 'r')
+        self.DEVS = {}
+        for ld in self.ini_f:
+            if ld.startswith('#') or (ld.strip() == ''):
+                continue
+            else:
+                b, p, name = ld.strip().split()
+                self.DEVS[name] = (int(b), int(p))
+        self.sersw = serswitch.serSwitch(portnum = self.MAX_PORT)
+   
+    def power(self, cmd='on'):
+        '''Power on or power off the correlator according to cmd:
+           Power on : 'on'
+           Power off: 'off'
+        Note: Here power on command is different from shutdown method. The former will
+              power off correlator one switch by one switch while the latter will power
+              off the correlator one chassis by one chassis.
+        '''
+        cmdname = 'Starting up' if cmd == 'on' else 'Shutting down'
+        ok_dev = 0
+        failed_dev = 0
+        #sersw = serswitch.serSwitch(portnum = MAX_PORT)
+        sersw = self.sersw
+        if options.on == 'alldev' or options.off == 'alldev':
+            # the power_seq below defines the sequence of powering on and powering off.
+            # Note that sw0 and sw1 are in the same switch, so only power on one of them; So is sw2 and sw3.
+            power_seq = [
+                   'fpga10','dsp4',  'sw19', 'sw11',   'dsp21', 'dsp5', 
+                   'fpga9', 'dsp2',  'sw18', 'sw10',   'dsp20', 'dsp3', 
+                   'fpga8', 'none43','sw9',  'sw13',   'dsp19', 'dsp1', 
+                   'fpga7', 'dsp10', 'sw8',  'sw12',   'dsp18', 'dsp11', 
+                   'fpga6', 'dsp8',  'sw7',  'sw15',   'dsp0',  'dsp9', 
+                   'fpga5', 'dsp6',  'sw6',  'sw14',   'dsp17', 'dsp7', 
+                   'fpga4', 'dsp16', 'sw5',  'sw17',   'dsp24', 'none67', 
+                   'fpga3', 'dsp14', 'sw4',  'sw16',   'none38','dsp15', 
+                   'fpga2', 'dsp12', 'fpga12','fpga0', 'dsp26', 'dsp13', 
+                   'fpga1', 'dsp22', 'fpga11','none50','dsp25','dsp23', 
+                   'sw0','blank2','sw2','blank4'
+                   ]
+            #skip_dev = [
+            #        'dsp0',  'dsp1',  'dsp3',  'dsp4',  'dsp5',  'dsp6',
+            #        'dsp7',  'dsp8',  'dsp9',  'dsp11', 'dsp12', 'dsp15',
+            #        'dsp16', 'dsp17', 'dsp18', 'dsp19', 'dsp20', 'dsp21',
+            #        'dsp22', 'dsp23', 'dsp25'
+            #        ]
+    #        power_seq = []
+    #        for i in xrange(24):
+    #            power_seq.append('fpga%d' % (i+1))
+    #            power_seq.append('sw%d' % (i+1))
+    #            if i < 12:
+    #                power_seq.append('dsp%d' % (i+1))
+
+            total_dev = len(power_seq)
+            try:
+                for dev_i in power_seq:
+        ##################
+        #            if dev_i.startswith('dsp'):
+        #                print dev_i, 'ignored.'
+        #                continue
+        ##################
+                    time.sleep(0.2)
+                    sersw.addr, sersw.port = self.DEVS[dev_i]
+                    print '%s    %-7s' % (cmdname, dev_i),
+                    if sersw.run(cmd, sersw.port, output=False):
+                        ok_dev += 1
+                        print '%-52s' % '[OK]'
+                    else:
+                        failed_dev += 1
+                        print '%-52s' % '[FAILED]'
+                    started_dev = ok_dev + failed_dev
+                    perc = 100*started_dev/total_dev
+                    proc = 50*started_dev/total_dev # Starting process
+                    sys.stdout.write('Progress: [%3d%%] [%s%s]\r' % (perc, '>'*proc, '.'*(50-proc)))
+                    sys.stdout.flush()
+            except KeyboardInterrupt:
+                pass
+            finally:
+                sersw.disconnect()
+                print '\nOver. %d succeeded. %d failed. %d not executed.' % (ok_dev, failed_dev, total_dev - ok_dev - failed_dev)
+        else:
+            devs = options.on if cmd == 'on' else options.off
+            if devs[-1] == ',': devs = devs[:-1]
+            devs = devs.split(',')
+            #sersw = serswitch.serSwitch()
+            sersw = self.sersw
+
+            if cmd == 'on':
+                for dev_i in devs:
+                    print 'Starting up  ', dev_i, '\t',
+                    sys.stdout.flush()
+                    sersw.addr, sersw.port = self.DEVS[dev_i]
+                    time.sleep(1)
+                    if not sersw.run('on', sersw.port, output=False):
+                        print '[FAILED]'
+                        continue
+                    else:
+                        print '[OK]'
+                sersw.disconnect()
+            elif cmd == 'off':
+                for dev_i in devs:
+                    print 'Shutting down', dev_i, '\t',
+                    sys.stdout.flush()
+                    sersw.addr, sersw.port = self.DEVS[dev_i]
+                    time.sleep(0.3)
+                    if not sersw.run('off', sersw.port, output=False):
+                        print '[FAILED]'
+                        continue
+                    else:
+                        print '[OK]'
+                sersw.disconnect()
+        return
+    
+    def shutdown(self):
+        '''Shutdown the correlator one chassis by one chassis.'''
+        #sersw = serswitch.serSwitch(portnum = MAX_PORT)
+        sersw = self.sersw
+        ok_chassis = 0
+        failed_chassis = 0
+        for addr in xrange(self.MAX_CHASSIS):
+            addr += 1
+            sersw.addr = addr
+            print 'Shutting down chassis %d' % (addr),
+            if sersw.run('alloff'):
+                ok_chassis += 1
+                print '%-52s' % '[OK]'
+            else:
+                failed_chassis += 1
+                print '%-52s' % '[FAILED]'
+            off_chassis = ok_chassis + failed_chassis
+            perc = 100*off_chassis / self.MAX_CHASSIS
+            proc = 50*off_chassis / self.MAX_CHASSIS # Starting process
+            sys.stdout.write('Progress: [%3d%%] [%s%s]\r' % (perc, '>'*proc, '.'*(50-proc)))
+            sys.stdout.flush()
+        print '\nOver. %d succeeded. %d failed.' % (ok_chassis, failed_chassis)
+        sersw.disconnect()
+        return
+    
+    def look(self, addr):
+        '''Function not finished yet.'''
+        print 'Sorry. Function not finished yet.'
+        exit()
+        #sersw = serswitch.serSwitch(addr=addr, portnum = self.MAX_PORT)
+        sersw = self.sersw
+        sersw.run('look')
+        sersw.disconnect()
+        return
+    
+    def restart(self, devs):
+        '''restart one or several devices. Use "," to split devices.
+           Example: sw1,sw20,fpga5,dsp10
+        '''
+        if devs[-1] == ',': devs = devs[:-1]
+        devs = devs.split(',')
+        #sersw = serswitch.serSwitch()
+        sersw = self.sersw
+        for dev_i in devs:
+            print 'Restarting', dev_i, '',
+            sys.stdout.flush()
+            sersw.addr, sersw.port = self.DEVS[dev_i]
+            if not sersw.run('off', sersw.port, output=False):
+                print '[FAILED]'
+                continue
+            #time.sleep(1)
+            time.sleep(options.time)
+            if not sersw.run('on', sersw.port, output=False):
+                print '[FAILED]'
+                continue
+            print '[OK]'
+        sersw.disconnect()
+        return
+
+#    def restart2(self, devs):
+#        '''Restart one or several devices. Use "," to split devices.
+#           Example: sw1,sw20,fpga5,dsp10
+#        '''
+#        if devs[-1] == ',': devs = devs[:-1]
+#        devs = devs.split(',')
+#        #sersw = serswitch.serSwitch()
+#        sersw = self.sersw
+#        for dev_i in devs:
+#            time.sleep(0.2)
+#            print 'Shutting down', dev_i, '\t',
+#            sys.stdout.flush()
+#            sersw.addr, sersw.port = self.DEVS[dev_i]
+#            if not sersw.run('off', sersw.port, output=False):
+#                print '[FAILED]'
+#                continue
+#            else:
+#                print '[OK]'
+#        print 'Waiting %.1f seconds.' % options.time
+#        time.sleep(options.time)
+#
+#        for dev_i in devs:
+#            print 'Starting up  ', dev_i, '\t',
+#            sys.stdout.flush()
+#            if not sersw.run('on', sersw.port, output=False):
+#                print '[FAILED]'
+#                continue
+#            else:
+#                print '[OK]'
+#            time.sleep(1)
+#        sersw.disconnect()
+#        return
+
+if __name__ == '__main__':
+    csw = corrSwitch()
+    parser = argparse.ArgumentParser(description='Correlator switch controller')
+    parser.add_argument('-o', '--on',  metavar='DEVNAME', dest='on',  const='alldev', nargs='?', help='turn on  serial switches; e.g. "fpga1,sw10,dsp5"; default=all switches')
+    parser.add_argument('-f', '--off', metavar='DEVNAME', dest='off', const='alldev', nargs='?', help='turn off serial switches; e.g. "fpga1,sw10,dsp5"; default=all switches')
+    parser.add_argument('-i', '--init', action='store_true', help='initialize the serial switches to off state')
+    parser.add_argument('-r', '--restart', type=str, dest='devname', help='restart serial switches; e.g. "fpga1,sw10,dsp5"')
+    parser.add_argument('-t', '--time', type=float, dest='time', nargs='?', default = 1.0, help='restart time (default=1 seconds); e.g. 1.5')
+    #parser.add_argument('-l', '--look', action='store_true', help='look current ports status; chassis is needed')
+    options = parser.parse_args()
+
+    if options.on != None:
+        csw.power('on')
+        exit()
+    if options.off != None:
+        csw.power('off')
+        exit()
+    if options.init == True:
+        csw.shutdown()
+        exit()
+    if options.devname != None:
+        csw.restart(options.devname)
+        exit()
+    parser.print_help()
+        
+    #if options.devname != None:
+    #    options.addr, options.port = name2ap(options.devname)
+    #if options.look == True:
+    #    if options.addr == None:
+    #        parser.print_help()
+    #        print 'Chassis number is needed.'
+    #        exit()
+    #    look(options.addr)
+    #    exit()
+    #if options.restart == True:
+    #    if options.addr == None:
+    #        parser.print_help()
+    #        print 'Chassis number is needed.'
+    #        exit()
+    #    if options.port == None:
+    #        parser.print_help()
+    #        print 'Port number is needed.'
+    #        exit()
+    #    restart(options.addr, options.port)
+    #    exit()

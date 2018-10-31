@@ -1,0 +1,181 @@
+#######################################
+# Version 1.0                         #
+# Last modified: 2015/12/5            #
+# Any problem, contact jxli@bao.ac.cn #
+#######################################
+
+import serswitch
+import time
+import argparse
+import numpy as np
+import sys
+
+MAX_CHASSIS = 3 # Address
+MAX_PORT = 10   # Port
+NAME_ARR = np.zeros((MAX_CHASSIS, MAX_PORT+1), dtype='|S5')
+NAME_ARR[0][1] = 'adc10'; NAME_ARR[1][1] = 'dsp4' ; NAME_ARR[2][1] = 'sw19' ;
+NAME_ARR[0][2] = 'adc9' ; NAME_ARR[1][2] = 'dsp2' ; NAME_ARR[2][2] = 'sw18' ;
+NAME_ARR[0][3] = 'adc8' ; NAME_ARR[1][3] = 'dsp0' ; NAME_ARR[2][3] = 'sw9'  ;
+NAME_ARR[0][4] = 'adc7' ; NAME_ARR[1][4] = 'dsp10'; NAME_ARR[2][4] = 'sw8'  ;
+NAME_ARR[0][5] = 'adc6' ; NAME_ARR[1][5] = 'dsp8' ; NAME_ARR[2][5] = 'sw7'  ;
+NAME_ARR[0][6] = 'adc5' ; NAME_ARR[1][6] = 'dsp6' ; NAME_ARR[2][6] = 'sw6'  ;
+NAME_ARR[0][7] = 'adc4' ; NAME_ARR[1][7] = 'dsp16'; NAME_ARR[2][7] = 'sw5'  ;
+NAME_ARR[0][8] = 'adc3' ; NAME_ARR[1][8] = 'dsp14'; NAME_ARR[2][8] = 'sw4'  ;
+NAME_ARR[0][9] = 'adc2' ; NAME_ARR[1][9] = 'dsp12'; NAME_ARR[2][9] = 'adc12';
+NAME_ARR[0][10]= 'adc1' ; NAME_ARR[1][10]= 'dsp22'; NAME_ARR[2][10]= 'adc11';
+
+#NAME_ARR[3][1] = 'sw11' ; NAME_ARR[4][1] = 'dsp21'; NAME_ARR[5][1] = 'dsp5' ;
+#NAME_ARR[3][2] = 'sw10' ; NAME_ARR[4][2] = 'dsp20'; NAME_ARR[5][2] = 'dsp3' ;
+#NAME_ARR[3][3] = 'sw13' ; NAME_ARR[4][3] = 'dsp19'; NAME_ARR[5][3] = 'dsp1' ;
+#NAME_ARR[3][4] = 'sw12' ; NAME_ARR[4][4] = 'dsp18'; NAME_ARR[5][4] = 'dsp11';
+#NAME_ARR[3][5] = 'sw15' ; NAME_ARR[4][5] = 'none' ; NAME_ARR[5][5] = 'dsp9' ;
+#NAME_ARR[3][6] = 'sw14' ; NAME_ARR[4][6] = 'none' ; NAME_ARR[5][6] = 'dsp7' ;
+#NAME_ARR[3][7] = 'sw17' ; NAME_ARR[4][7] = 'dsp24'; NAME_ARR[5][7] = 'dsp17';
+#NAME_ARR[3][8] = 'sw2'  ; NAME_ARR[4][8] = 'none' ; NAME_ARR[5][8] = 'dsp15';
+#NAME_ARR[3][9] = 'sw3'  ; NAME_ARR[4][9] = 'dsp26'; NAME_ARR[5][9] = 'dsp13';
+#NAME_ARR[3][10]= 'sw1'  ; NAME_ARR[4][10]= 'dsp25'; NAME_ARR[5][10]= 'dsp23';
+
+class corrSwitch(object):
+    '''Correlator power manager: Turn On, Off correlator or Restart one switch.'''
+    #def __init__(self, action):
+    #    '''Action can be "on", "off", "restart".'''
+    #    self.dev
+    def name2ap(self, devname):
+        '''devname can be 'adcN', 'dspN', 'swN', where 'N' is a number.
+            For ADC, N can be 0,1,2...12;
+            For DSP, N can be ;
+            For switch, N can be .
+        RETURN (addr, port)
+        '''
+        for addr in xrange(MAX_CHASSIS):
+            for port in xrange(1, MAX_PORT+1):
+                if NAME_ARR[addr][port] == devname:
+                    return addr, port
+        if addr == MAX_CHASSIS - 1 and port == MAX_PORT:
+            print 'Can not find device', devname
+            return False
+    
+    def power(self, cmd='on'):
+        '''Power on or power off the correlator according to cmd:
+           Power on : 'on'
+           Power off: 'off'
+        Note: Here power on command is different from shutdown method. The former will
+              power off correlator one switch by one switch while the latter will power
+              off the correlator one chassis by one chassis.
+        '''
+        total_dev = MAX_CHASSIS * MAX_PORT
+        ok_dev = 0
+        failed_dev = 0
+        sersw = serswitch.serSwitch(portnum = MAX_PORT)
+        for port in xrange(1, MAX_PORT+1):
+            for addr in xrange(MAX_CHASSIS):
+                sersw.addr = addr
+                sersw.port = port
+                print 'Starting %-7s' % NAME_ARR[addr][port],
+                if sersw.run(cmd, port, output=False):
+                    ok_dev += 1
+                    print '%-52s' % '[OK]'
+                else:
+                    failed_dev += 1
+                    print '%-52s' % '[FAILED]'
+                started_dev = ok_dev + failed_dev
+                perc = 100*started_dev/total_dev
+                proc = 50*started_dev/total_dev # Starting process
+                sys.stdout.write('Progress: [%3d%%] [%s%s]\r' % (perc, '#'*proc, '.'*(50-proc)))
+                sys.stdout.flush()
+        print '\nOver. %d succeeded. %d failed.' % (ok_dev, failed_dev)
+        return
+    
+    def shutdown(self):
+        '''Shutdown the correlator one chassis by one chassis.'''
+        sersw = serswitch.serSwitch(portnum = MAX_PORT)
+        ok_chassis = 0
+        failed_chassis = 0
+        for addr in xrange(MAX_CHASSIS):
+            sersw.addr = addr
+            print 'Shutting down chassis %d' % (addr),
+            if sersw.run('alloff'):
+                ok_chassis += 1
+                print '%-52s' % '[OK]'
+            else:
+                failed_chassis += 1
+                print '%-52s' % '[FAILED]'
+            off_chassis = ok_chassis + failed_chassis
+            perc = 100*off_chassis / MAX_CHASSIS
+            proc = 50*off_chassis / MAX_CHASSIS # Starting process
+            sys.stdout.write('Progress: [%3d%%] [%s%s]\r' % (perc, '#'*proc, '.'*(50-proc)))
+            sys.stdout.flush()
+        print '\nOver. %d succeeded. %d failed.' % (ok_chassis, failed_chassis)
+        return
+    
+    def look(self, addr):
+        sersw = serswitch.serSwitch(addr=addr, portnum = MAX_PORT)
+        sersw.run('look')
+        return
+    
+    def restart(self, devs):
+        '''Restart one or several devices. Use "," to split devices.
+           Example: sw1,sw20,adc5,dsp10
+        '''
+        if devs[-1] == ',': devs = devs[:-1]
+        devs = devs.split(',')
+        ap = map(self.name2ap, devs)
+        sersw = serswitch.serSwitch()
+        for n, ap_i in enumerate(ap):
+            print 'Restarting', devs[n], '',
+            sys.stdout.flush()
+            sersw.addr = ap_i[0]
+            if not sersw.run('off', ap_i[1], output=False):
+                print '[FAILED]', devs[n]
+                continue
+            time.sleep(0.9)
+            if not sersw.run('on', ap_i[1], output=False):
+                print '[FAILED]', devs[n]
+                continue
+            print '[OK]'
+        return
+
+if __name__ == '__main__':
+    csw = corrSwitch()
+    parser = argparse.ArgumentParser(description='Correlator switch controller')
+    parser.add_argument('-o', '--on', action='store_true', help='turn on all the serial switches')
+    parser.add_argument('-f', '--off', action='store_true', help='turn off all the serial switches')
+    parser.add_argument('-r', '--restart', type=str, dest='devname', help='restart serial switches; e.g. "adc1,sw10,dsp5"')
+    #parser.add_argument('-r', '--restart', action='store_true', help='restart port(s); chassis and port are needed')
+    #parser.add_argument('-n', '--name', type=str, dest='devname', help='Choose device name: adcN, swN, dspN, where N is a number.')
+    #parser.add_argument('-c', '--chassis', dest='addr', type=int, choices=range(1,MAX_CHASSIS+1), help='choose chassis number (1-6).')
+    #parser.add_argument('-p', '--port', type=int, choices=range(1,MAX_PORT+1), help='Choose port number (1-16).')
+    #parser.add_argument('-l', '--look', action='store_true', help='look current ports status; chassis is needed')
+    options = parser.parse_args()
+
+    if options.on == True:
+        csw.power('on')
+        exit()
+    if options.off == True:
+        #power('off')
+        csw.shutdown()
+        exit()
+    if options.devname != None:
+        csw.restart(options.devname)
+        exit()
+        
+    #if options.devname != None:
+    #    options.addr, options.port = name2ap(options.devname)
+    #if options.look == True:
+    #    if options.addr == None:
+    #        parser.print_help()
+    #        print 'Chassis number is needed.'
+    #        exit()
+    #    look(options.addr)
+    #    exit()
+    #if options.restart == True:
+    #    if options.addr == None:
+    #        parser.print_help()
+    #        print 'Chassis number is needed.'
+    #        exit()
+    #    if options.port == None:
+    #        parser.print_help()
+    #        print 'Port number is needed.'
+    #        exit()
+    #    restart(options.addr, options.port)
+    #    exit()
