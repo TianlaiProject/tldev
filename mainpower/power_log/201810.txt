@@ -1,0 +1,19 @@
+# File log for instrument power operation of antenna array area.
+# second1970: seconds since python epoch obtained by time.time()
+# 32op: optic transmitter for dish antenna array.
+# 192op: optic transmitter for cylinder antenna array.
+# dish: unnecessary instruments in antenna array area.
+# When "dish" is turned on during an observation, note potential RFI from that moment until it is turned off.
+# Any problems, contact Jixia Li [jxli@bao.ac.cn].
+# second1970	date	time	power	instrument
+1538485349	2018/10/02 21:02:29	off	hill
+1538485357	2018/10/02 21:02:37	on	dish
+1539359019	2018/10/12 23:43:39	off	dish
+1539362053	2018/10/13 00:34:13	on	dish
+1540553137	2018/10/26 19:25:37	off	dish
+1540553162	2018/10/26 19:26:02	on	dish
+1540553289	2018/10/26 19:28:09	off	dish
+1540890841	2018/10/30 17:14:01	on	dish
+1540963999	2018/10/31 13:33:19	off	dish
+1540971751	2018/10/31 15:42:31	on	dish
+1540972291	2018/10/31 15:51:31	off	dish

@@ -1,0 +1,43 @@
+# File log for instrument power operation of antenna array area.
+# second1970: seconds since python epoch obtained by time.time()
+# 32op: optic transmitter for dish antenna array.
+# 192op: optic transmitter for cylinder antenna array.
+# dish: unnecessary instruments in antenna array area.
+# When "dish" is turned on during an observation, note potential RFI from that moment until it is turned off.
+# Any problems, contact Jixia Li [jxli@bao.ac.cn].
+# second1970	date	time	power	instrument
+1510058493	2017/11/07 20:41:33	on	dish
+1510058942	2017/11/07 20:49:02	on	hill
+1510058952	2017/11/07 20:49:12	off	hill
+1510059073	2017/11/07 20:51:13	off	dish
+1510064997	2017/11/07 22:29:57	on	dish
+1510065227	2017/11/07 22:33:47	off	dish
+1510068657	2017/11/07 23:30:57	on	dish
+1510068993	2017/11/07 23:36:33	off	dish
+1510648503	2017/11/14 16:35:03	on	dish
+1510653921	2017/11/14 18:05:21	off	dish
+1510664092	2017/11/14 20:54:52	on	dish
+1510664373	2017/11/14 20:59:33	off	dish
+1510668762	2017/11/14 22:12:42	on	dish
+1510669085	2017/11/14 22:18:05	off	dish
+1510672339	2017/11/14 23:12:19	on	dish
+1510672974	2017/11/14 23:22:54	off	dish
+1511317967	2017/11/22 10:32:47	on	dish
+1511322121	2017/11/22 11:42:01	off	dish
+1511335786	2017/11/22 15:29:46	on	dish
+1511344148	2017/11/22 17:49:08	off	dish
+1511510825	2017/11/24 16:07:05	off	hill
+1511512335	2017/11/24 16:32:15	on	dish
+1511525013	2017/11/24 20:03:33	off	dish
+1511529936	2017/11/24 21:25:36	on	dish
+1511530229	2017/11/24 21:30:29	off	dish
+1511699911	2017/11/26 20:38:31	off	hill
+1511967404	2017/11/29 22:56:44	on	dish
+1511967408	2017/11/29 22:56:48	off	hill
+1511969552	2017/11/29 23:32:32	off	dish
+1511969634	2017/11/29 23:33:54	off	dish
+1511971565	2017/11/30 00:06:05	on	32op
+1511971987	2017/11/30 00:13:07	off	32op
+1511971989	2017/11/30 00:13:09	on	32op
+1512029459	2017/11/30 16:10:59	on	dish
+1512030138	2017/11/30 16:22:18	off	dish
