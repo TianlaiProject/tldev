@@ -1,0 +1,43 @@
+snmpset -v2c -c public -ObentU demo.snmplabs.com 1.3.6.1.2.1.1.9.1.3.1 s ‘New description’ 1.3.6.1.2.1.1.9.1.4.1 t 12
+
+snmpget -v1 -c public -ObentU demo.snmplabs.com 1.3.6.1.2.1.1.1.0 1.3.6.1.2.1.1.3.0
+
+1.3.6.1.4.1.318.1.1.4.2.2.0 = On  On  On  On  On  On  On  On
+
+http://systembash.com/use-php-for-apc-snmp-mib/
+
+No. of outlet, change last number:
+1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.1  out1
+1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.2  out2
+.........
+1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.8  out8
+
+snmpget -v1 -c observer 192.168.1.88 1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.1
+snmpset -v1 -c observer 192.168.1.88 1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.1 i 1
+
+Status of all outlets:
+1.3.6.1.4.1.318.1.1.4.2.2.0
+
+Total Current:
+1.3.6.1.4.1.318.1.1.12.2.3.1.1.2.1
+
+1 On Immediate
+2 Off Immediate
+3 Reboot Immediate
+4 On delay
+5 Off delay
+6 Reboot delay
+
+
+
+
+
+#############################################################
+zuo shifan pdu.py
+2 On Immediate
+3 On delay
+4 Off Immediate
+5 Off delay
+6 Reboot Immediate
+7 Reboot delay
+
