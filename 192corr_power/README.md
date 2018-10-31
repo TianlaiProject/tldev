@@ -1,3 +1,15 @@
+# 192chn Correlator Power Controller
+
+Run
+
+`python corrswitch.py -h`
+
+for help
+
+----------------------------
+
+Omit following lines:
+
 1. To control the whole correlator system - both PDUs and serial switches, use 'total_power.py'.
 For specific usage, run 'python power.py -h' for help.
 
