@@ -10,6 +10,8 @@ Using snmp protocol is more efficient and has much faster response and so is **s
 
 Using http protocol is **not** suggested becaused of authentication problem and slow response.
 
+This code is used for APC PDU. Users should set up SNMP connection parameters in the PDU device before using this code.
+
 ## Usage
 
 `python pdu_snmp.py -h`
