@@ -1,12 +1,12 @@
-#Weather Station Controller#
+# Weather Station Controller
 
 Python code to control the weather station installed in station house.
 
-# Interactive Running:
+## Interactive Running:
 
 `python tlweather.py -h`
 
-# Backgrond Running:
+## Backgrond Running:
 
 **Run**
 
