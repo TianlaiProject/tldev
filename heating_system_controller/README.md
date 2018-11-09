@@ -6,17 +6,19 @@ This is still a raw version. I will rewrite the whole code in the future.
 
 ## Usage
 
-*Power on:*
+**Power on**
 
 `python heating_system.py poweron`
 
 Once powered on, the highest temperature would be limited to 45 Celcius degree by the heating system itself.
 
-*Power off:*
+**Power off**
 
 `python heating_system.py poweroff`
 
-Automatically power off after some time:
+**Automatically power off**
+
+Automatically power off after some time in seconds:
 
 `python timer.py [second]`
 
