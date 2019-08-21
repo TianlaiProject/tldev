@@ -4,11 +4,11 @@
 
 For *Windows OS*, install *pyvisa, NI-VISA, USB-GPIB* driver.
 
-   Use python installer to install python and run python in *cmd*.
+(1) Use python installer to install python and run python in *cmd*.
    
-   In cmd, install python-pip.
+(2) In cmd, install python-pip.
    
-   Use pip to install pyvisa.
+(3) Use pip to install pyvisa.
    
      `pip install pyvisa`
 
