@@ -15,14 +15,14 @@ if __name__ == '__main__':
     parser.add_argument('-f', dest='frequency', metavar='Frequency', type=int, help='Manually measure at assigned Frequency; Unit: MHz')
     parser.add_argument('-p', dest='plot', metavar='DatafileName', nargs='?', const='NF_data_', help='Plot noise figure data with DatafileName; Default: NF_data_$LatestDateTime$.txt')
     options = parser.parse_args()
-    #print options
+    #print(options)
     
     if options.plot != None:
         if options.plot == 'NF_data_':
             import glob
             txtfiles = glob.glob('NF_data_??????????????.txt')
             if txtfiles == []:
-                print 'Error: Can not find data file of format NF_data_$LatestDateTime$.txt .'
+                print('Error: Can not find data file of format NF_data_$LatestDateTime$.txt .')
                 exit()
             txtfile = sorted(txtfiles)[-1]
         else:
@@ -94,7 +94,7 @@ if __name__ == '__main__':
         # Special function sets (Fre, Gain, NF) output.
         status = inst.write('SPH1')
 
-        print 'Set ENR succeeded.'
+        print('Set ENR succeeded.')
         try:
             inst.close()
         except:
